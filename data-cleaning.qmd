@@ -7,6 +7,8 @@ format: typst
 ```{r}
 #| message: false
 #| warning: false
+#| fig.show: "hide"
+#| dev: "null"
 
 #data/g24_sov_by_g24_svprec.csv: vote totals by precinct and contest
 #data/g24-results-by-district.xlsx: aggregates votes to the congressional district level
