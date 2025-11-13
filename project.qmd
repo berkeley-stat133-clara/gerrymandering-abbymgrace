@@ -36,7 +36,11 @@ Visit the website of the California Secretary of State for their information on 
 
 Visit the website of the Statewide Database and learn about what data products are available from the 2024 General Election and any extra information they provide about how to interpret them. Also learn about who runs the database, where it is housed, and how it operates.
 
+
 \
+    data/g24_sov_by_g24_svprec.csv: vote totals by precinct and contest
+    data/g24-results-by-district.xlsx: aggregates votes to the congressional district level
+    g24-candidates-by-district.csv: lists candidates running in each district
 
 {{< pagebreak >}}
 
