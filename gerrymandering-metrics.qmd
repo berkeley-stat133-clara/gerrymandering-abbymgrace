@@ -4,8 +4,60 @@ format: typst
 ---
 
 ### 2024 Election Results and the 2024 District Map
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+
+#need our cleaned prec data 
+prec <- read_csv("data/clean-precinct.csv", show_col_types = FALSE)
+
+#sum of precincts to distrcits
+dist <- prec |>
+    group_by(CDDIST) |>
+    summarize(
+        dem = sum(USPDEM01, na.rm = TRUE),
+        rep = sum(USPREP01, na.rm = TRUE),
+        .groups = "drop") |>
+    mutate(
+        total = dem + rep,
+    ) |>
+    filter(total > 0) |>
+    mutate(share = dem / total) |>
+    filter(is.finite(share))
+
+#mean median score
+mean_s <- mean(dist$share)
+median_s <- median(dist$share)
+mm_score <- mean_s - median_s 
+
+mean_s
+median_s
+mm_score
+
+#efficiency gap
+waste <- function(a,b) {
+    t <- a + b
+    need <- floor(t/2) + 1
+    ifelse(a > b, a - need, a)
+}
+
+dist <- dist |>
+    mutate(
+        dwaste = waste(dem, rep),
+        rwaste = waste(rep, dem)
+    )
+
+gap <- sum(dist$rwaste - dist$dwaste) / sum(dist$total)
+gap
+
+```
 
 
+Mean - Median Score: The average Dem vote share is 59.1% across distrcits while the median is 60.2%. The mean-median score is around -0.12 which means it is more Republican. 
+
+Efficiency Gap: The efficiency gap is around 0.286 and with it being Rep minus Dem wasted votes, with our positive value, we know Rep wasted more votes. This means the map gives the Dem a advantage. 
 
 ### 2024 Election Results and the proposed 2025 District Map
 
