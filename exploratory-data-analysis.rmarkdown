@@ -10,7 +10,6 @@ Which precinct had the closest race between Democrats and Republicans?
 ### Answer 1
 
 ```{r}
-library(tidyverse)
 q1 <- prec |> mutate(margin = abs(DEMVOTE - REPVOTE)) |> arrange(margin)
 head(q1, 5)
 ```
