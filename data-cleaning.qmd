@@ -17,6 +17,8 @@ library(tidyverse)
 library(readxl)
 library(readr)
 library(stringr)
+library(sf)
+library(dplyr)
 
 #load the data 
 #cleaning it by fixing the weird values 
@@ -49,4 +51,58 @@ dist_clean <- dist |>
 
 write_csv(dist_clean, "data/clean-district-totals.csv")
 
+```
+
+
+```{r}
+#reading csv 
+sr_votes <- read_csv(
+    "data/state_g24_sov_data_by_g24_srprec.csv",
+    na = c("", "NA", "", "**", "****", "***", "*****"),
+    show_col_types = FALSE
+    ) |>
+    select(SRPREC, USPDEM01, USPREP01) |>
+    mutate(
+        USPDEM01 = as.numeric(USPDEM01), 
+        USPREP01 = as.numeric(USPREP01))
+
+sr_shp <- st_read("data/shapefiles/srprecincts/srprec_state_g24_v01_shp.shp", quiet = TRUE)
+ab604 <- st_read("data/shapefiles/AB604/AB604.shp", quiet = TRUE)
+
+sr_shp <- sr_shp |>
+    st_transform(3310) |>
+    st_set_precision(1) |>
+    st_make_valid() |>
+    st_collection_extract("POLYGON")
+
+ab604 <- ab604 |> 
+    st_transform(3310) |>
+    st_set_precision(1) |>
+    st_make_valid() |>
+    st_collection_extract("POLYGON")
+
+sr <- sr_shp |>
+    left_join(sr_votes, by = c("SRPREC" = "SRPREC")) |>
+    mutate(area = st_area(geometry))
+
+inter <- st_intersection(sr, ab604 |> select(new_dist = 1))
+
+inter <- inter |>
+    mutate(
+        area2 = st_area(geometry),
+        share = as.numeric(area2 / area),
+        dem_s = share * USPDEM01,
+        rep_s = share * USPREP01)
+
+ab604_v <- inter |>
+    st_drop_geometry() |>
+    group_by(new_dist) |>
+    summarize(
+        dem = sum(dem_s, na.rm = TRUE),
+        rep = sum(rep_s, na.rm = TRUE),
+        .groups = "drop"
+    ) |>
+    mutate(total = dem + rep)
+
+write_csv(ab604_v, "data/ab604-district-totals.csv")
 ```

@@ -1,5 +1,67 @@
 ---
 title: Dashboard
-format: dashboard
+format: 
+    dashboard:
+        theme: cosmo
 ---
 
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(sf)
+
+dist_2024 <- read_csv("data/clean-district-totals.csv", show_col_types = FALSE)
+dist_ab604 <- read_csv("data/ab604-district-totals.csv", show_col_types = FALSE)
+
+dist_2024 <- dist_2024 |> 
+    mutate(win = ifelse(d_votes > r_votes, "Democrat", "Republican"),
+    share = d_votes / (d_votes + r_votes))
+
+dist_ab604 <- dist_ab604 |>
+    mutate(win = ifelse(dem > rep, "Democrat", "Republican"),
+    share = dem / (dem + rep))
+
+won <- function(d) {
+    d |>
+        count(win) |>
+        mutate(prop = n / sum(n))
+}
+
+s2024 <- won(dist_2024)
+sab604 <- won(dist_ab604)
+
+
+
+mm_2024 <- mean(dist_2024$share) - median(dist_2024$share)
+mm_ab604 <- mean(dist_ab604$share) - median(dist_ab604$share)
+
+waste <- function(a,b) {
+    t <- a + b
+    need <- floor(t/2) + 1
+    ifelse(a > b, a - need, a)
+}
+
+dist_2024 <- dist_2024 |>
+    mutate(
+        dwaste = waste(d_votes, r_votes),
+        rwaste = waste(r_votes, d_votes)
+    )
+
+gap_2024 <- sum(dist_2024$rwaste - dist_2024$dwaste) / sum(dist_2024$d_votes + dist_2024$r_votes)
+
+dist_ab604 <- dist_ab604 |>
+    mutate(
+        dwaste = waste(dem, rep),
+        rwaste = waste(rep, dem)
+    )
+
+gap_ab604 <- sum(dist_ab604$rwaste - dist_ab604$dwaste) / sum(dist_ab604$dem + dist_ab604$rep)
+
+
+mm_2024
+gap_2024
+mm_ab604
+gap_ab604
+```

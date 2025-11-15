@@ -14,7 +14,7 @@ library(tidyverse)
 prec <- read_csv("data/clean-precinct.csv", show_col_types = FALSE)
 
 #sum of precincts to distrcits
-dist <- prec |>
+dist_2024 <- prec |>
     group_by(CDDIST) |>
     summarize(
         dem = sum(USPDEM01, na.rm = TRUE),
@@ -28,8 +28,8 @@ dist <- prec |>
     filter(is.finite(share))
 
 #mean median score
-mean_s <- mean(dist$share)
-median_s <- median(dist$share)
+mean_s <- mean(dist_2024$share)
+median_s <- median(dist_2024$share)
 mm_score <- mean_s - median_s 
 
 mean_s
@@ -43,15 +43,42 @@ waste <- function(a,b) {
     ifelse(a > b, a - need, a)
 }
 
-dist <- dist |>
+dist_2024 <- dist_2024 |>
     mutate(
         dwaste = waste(dem, rep),
         rwaste = waste(rep, dem)
     )
 
-gap <- sum(dist$rwaste - dist$dwaste) / sum(dist$total)
-gap
+gap_2024 <- sum(dist_2024$rwaste - dist_2024$dwaste) / sum(dist_2024$total)
+gap_2024
+```
 
+
+```{r}
+dist_ab604 <- st_read("data/ab604-district-totals.csv", quiet = TRUE)
+
+dist_ab604 <- dist_ab604 |>
+    mutate(total = dem + rep) |>
+    filter(total > 0)
+
+share_ab604 <- dist_ab604$dem / dist_ab604$total
+
+mean_ab604 <- mean(share_ab604)
+median_ab604 <- median(share_ab604)
+mm_score_ab604 <- mean_ab604 - median_ab604
+
+mean_ab604 
+median_ab604 
+mm_score_ab604 
+
+dist_ab604 <- dist_ab604 |>
+    mutate(
+        dwaste = waste(dem, rep),
+        rwaste = waste(rep, dem)
+    )
+
+gap_ab604 <- sum(dist_ab604$rwaste - dist_ab604$dwaste) / sum(dist_ab604$total)
+gap_ab604
 ```
 
 
