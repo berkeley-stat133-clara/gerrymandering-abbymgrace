@@ -1,0 +1,12 @@
+# Ignore compiled Quarto/R files
+*.html
+*.pdf
+*.aux
+*.log
+
+# Ignore large shapefiles (they can be re-downloaded)
+data/shapefiles/
+
+# Ignore large raw vote files (they can be re-downloaded)
+data/g24_sov_by_g24_svprec.csv
+data/state_g24_sov_data_by_g24_srprec.csv
